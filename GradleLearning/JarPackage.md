@@ -22,7 +22,7 @@ Main-Class: Hello
 ```
  java -jar hello.jar
 ```
-## 含有两个类的jar包
+## 二、含有两个类的jar包
 1. given
 ![img_9.png](img_9.png)
 2. 编译： 
@@ -40,7 +40,7 @@ javac Hello.java
 ```
  jar -cvfm hello.jar META-INF\MENIFEST.MF Hello.class Tom.class 
 ```
-## 有目录结构的jar包
+## 三、有目录结构的jar包
 1. given
 ![img_10.png](img_10.png)
 2. 编译。。。。。
