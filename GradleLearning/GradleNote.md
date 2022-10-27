@@ -254,10 +254,125 @@ println it.name
 }
 ```
 ### 三、文件树
+***
+## Dependencies
+### 一、
+```
+dependencies {
+   //①.依赖当前项目下的某个模块[子工程]  (在settings里有的)
+   implementation project(':subject01')
+   //②.直接依赖本地的某个jar文件
+   implementation files('libs/foo.jar', 'libs/bar.jar')
+   //②.配置某文件夹作为依赖项
+   implementation fileTree(dir: 'libs', include: ['*.jar'])
+   //③.直接依赖
+   implementation 'org.apache.logging.log4j:log4j:2.17.2'
+}
+```
+### 二、依赖冲突
+1. 默认自动选择高版本jar包
+2. 手动排除依赖
+- Exclude 排除某个依赖
+```
+dependencies {
+   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1' 
+   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1' 
+   
+   implementation('org.hibernate:hibernate-core:3.6.3.Final'){
+   //排除某一个库(slf4j)依赖:如下三种写法都行
+      exclude group: 'org.slf4j' exclude module: 'slf4j-api'
+      exclude group: 'org.slf4j',module: 'slf4j-api'
+   }
+   //排除之后,使用手动的引入即可。
+   implementation 'org.slf4j:slf4j-api:1.4.0'
+}
+```
+- 不允许依赖传递
+```
+dependencies {
+   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1' 
+   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1' 
+   
+   implementation('org.hibernate:hibernate-core:3.6.3.Final'){
+      //不允许依赖传递，一般不用
+      transitive(false)
+   }
+   //排除之后,使用手动的引入即可
+   implementation 'org.slf4j:slf4j-api:1.4.0'
+}
+在添加依赖项时,如果设置 transitive 为false,表示关闭依赖传递。即内部的所有依赖将不会添加到编译和运行时的类路径。
+```
 
+- 强制使用某个版本
+```
+dependencies {
+   testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1' 
+   testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1' 
+   implementation('org.hibernate:hibernate-core:3.6.3.Final')
+   
+   //强制使用某个版本!!【官方建议使用这种方式】
+   implementation('org.slf4j:slf4j-api:1.4.0!!')
+   
+   //这种效果和上面那种一样,强制指定某个版本
+   implementation('org.slf4j:slf4j-api:1.4.0'){
+      version{
+         strictly("1.4.0")
+      }
+   }
+}
+```
+### 三、查看依赖冲突
+```
+//下面我们配置，当 Gradle 构建遇到依赖冲突时，就立即构建失败
+configurations.all() {
+   Configuration configuration ->
+   
+   //当遇到版本冲突时直接构建失败
+   configuration.resolutionStrategy.failOnVersionConflict()
+}
+```
+***
+## Gradle插件
+### 一、脚本插件
+- 使用脚本插件时通过apply from:将脚本加载进来就可以了
+- 脚本：
+```
+//version.gradle文件
+ext {
+   company= "尚硅谷" 
+   cfgs = [
+      compileSdkVersion : JavaVersion.VERSION_1_8
+   ]
+   spring = [
+      version : '5.0.0'
+   ]
+}
+```
+- build.gradle文件：
+```
+//build.gradle文件
+//map作为参数
 
+apply from: 'version.gradle' 
 
+task taskVersion{
+   doLast{
+      println "公司名称为：${company},JDK版本是${cfgs.compileSdkVersion},版本号是${spring.version}"
+   }
+}
+```
+### 二、对象插件==二进制插件
+- 二进制插件就是实现了 org.gradle.api.**Plugin**  接口的插件
+- 每个 Java Gradle 插件都有一个 plugin id。
+- ![img_11.png](img_11.png)
+#### 1、内部插件[核心插件]
+> https://docs.gradle.org/current/userguide/plugin_reference.html
+官方文档  
 
+例如：java插件有什么额外功能，去官网看
+***
+## Builde.Gradle
+![img_12.png](img_12.png)
 
 
 
